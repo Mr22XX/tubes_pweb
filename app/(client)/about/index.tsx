@@ -1,10 +1,461 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+// app/(client)/about/index.tsx
+import React from "react";
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  ScrollView, 
+  TouchableOpacity, 
+  Dimensions 
+} from "react-native";
+import Navbar from "../../../components/Navbar";
+import { router } from 'expo-router';
 
-export default function index() {
+const windowWidth = Dimensions.get('window').width;
+
+export default function About() {
+  // Company values/principles
+  const values = [
+    {
+      title: "Kualitas",
+      description: "Kami hanya menyediakan produk kuliner terbaik dan berkualitas tinggi."
+    },
+    {
+      title: "Keberagaman",
+      description: "Menghargai keberagaman kuliner Indonesia dari Sabang sampai Merauke."
+    },
+    {
+      title: "Inovasi",
+      description: "Terus berinovasi untuk memberikan pengalaman kuliner terbaik."
+    },
+    {
+      title: "Kepuasan Pelanggan",
+      description: "Fokus utama kami adalah memberikan kepuasan maksimal kepada setiap pelanggan."
+    }
+  ];
+
+  // Services offered
+  const services = [
+    {
+      title: "Katalog Kuliner",
+      description: "Akses ke ribuan pilihan makanan dan minuman berkualitas dari seluruh Indonesia."
+    },
+    {
+      title: "Pengiriman Cepat",
+      description: "Layanan pengiriman yang cepat dan aman untuk menjaga kualitas makanan tetap baik."
+    },
+    {
+      title: "Pembayaran Mudah",
+      description: "Berbagai metode pembayaran yang aman dan nyaman untuk semua pengguna."
+    },
+    {
+      title: "Layanan Pelanggan",
+      description: "Tim dukungan yang siap membantu Anda dengan segala pertanyaan dan kebutuhan."
+    }
+  ];
+
   return (
-    <View>
-      <Text>index</Text>
+    <View style={styles.container}>
+      <Navbar />
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Hero Section */}
+        <View style={styles.heroSection}>
+          <Text style={styles.heroTitle}>Tentang RayTalog</Text>
+          <Text style={styles.heroSubtitle}>
+            Platform Kuliner Terlengkap di Indonesia
+          </Text>
+        </View>
+
+        {/* Our Story Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Tentang Kami</Text>
+          <View style={styles.storyContainer}>
+            <View style={styles.storyContent}>
+              <Text style={styles.storyText}>
+                RayTalog adalah platform kuliner digital yang menghubungkan penikmat kuliner 
+                dengan berbagai pilihan makanan dan minuman terbaik dari seluruh Indonesia. Sebagai 
+                katalog kuliner komprehensif, kami menyediakan akses mudah ke ratusan menu berkualitas.
+              </Text>
+              <Text style={styles.storyText}>
+                Nama "RayTalog" berasal dari kata "Ray" yang melambangkan sinar atau cahaya, dan 
+                "Talog" yang merupakan singkatan dari "Katalog". Kami hadir untuk menerangi dunia 
+                kuliner Indonesia dan memperkenalkannya kepada masyarakat luas.
+              </Text>
+              <Text style={styles.storyText}>
+                Saat ini, RayTalog telah menjadi platform kuliner terpercaya yang menyediakan 
+                pengalaman berbelanja kuliner terbaik dengan sistem pemesanan yang mudah dan aman.
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Our Vision & Mission */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Visi & Misi</Text>
+          <View style={styles.visionMissionContainer}>
+            <View style={styles.visionContainer}>
+              <Text style={styles.subSectionTitle}>Visi</Text>
+              <Text style={styles.visionMissionText}>
+                Menjadi platform kuliner terdepan dan terpercaya di Indonesia yang menghubungkan penikmat 
+                kuliner dengan beragam pilihan makanan dan minuman berkualitas.
+              </Text>
+            </View>
+            
+            <View style={styles.missionContainer}>
+              <Text style={styles.subSectionTitle}>Misi</Text>
+              <View style={styles.missionList}>
+                <Text style={styles.missionItem}>• Menyediakan akses mudah ke berbagai pilihan kuliner berkualitas tinggi</Text>
+                <Text style={styles.missionItem}>• Mendukung dan mempromosikan UMKM kuliner lokal di seluruh Indonesia</Text>
+                <Text style={styles.missionItem}>• Memberikan pengalaman berbelanja yang aman, nyaman, dan memuaskan</Text>
+                <Text style={styles.missionItem}>• Terus berinovasi dalam teknologi dan layanan untuk memenuhi kebutuhan pelanggan</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Our Values */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Nilai-Nilai Kami</Text>
+          <View style={styles.valuesGrid}>
+            {values.map((value, index) => (
+              <View key={index} style={styles.valueCard}>
+                <View style={styles.valueIconPlaceholder}>
+                  {/* Placeholder for value icon */}
+                </View>
+                <Text style={styles.valueTitle}>{value.title}</Text>
+                <Text style={styles.valueDescription}>{value.description}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Our Services */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Layanan Kami</Text>
+          <View style={styles.servicesGrid}>
+            {services.map((service, index) => (
+              <View key={index} style={styles.serviceCard}>
+                <View style={styles.serviceIconPlaceholder}>
+                  {/* Placeholder for service icon */}
+                </View>
+                <Text style={styles.serviceTitle}>{service.title}</Text>
+                <Text style={styles.serviceDescription}>{service.description}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Call to action */}
+        <View style={styles.ctaSection}>
+          <Text style={styles.ctaTitle}>Jelajahi RayTalog Sekarang</Text>
+          <Text style={styles.ctaText}>
+            Temukan beragam pilihan kuliner terbaik untuk memuaskan selera Anda. 
+            Nikmati kemudahan berbelanja dan pengalaman kuliner yang tak terlupakan.
+          </Text>
+          <TouchableOpacity 
+            style={styles.ctaButton}
+            onPress={() => router.push("/(client)/home")}
+          >
+            <Text style={styles.ctaButtonText}>Mulai Menjelajah</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.footerTop}>
+            {/* Kolom 1 */}
+            <View style={styles.footerCol}>
+              <Text style={styles.footerColTitle}>RayTalog</Text>
+              <Text style={styles.footerText}>
+                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan makanan dan minuman berkualitas.
+              </Text>
+            </View>
+
+            {/* Kolom 2 */}
+            <View style={styles.footerCol}>
+              <Text style={styles.footerColTitle}>Informasi</Text>
+              <TouchableOpacity onPress={() => router.push("/(client)/about")}>
+                <Text style={styles.footerLink}>Tentang Kami</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push("/(client)/contact")}>
+                <Text style={styles.footerLink}>Kontak Kami</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Kolom 3 */}
+            <View style={styles.footerCol}>
+              <Text style={styles.footerColTitle}>Ikuti Kami</Text>
+              <View style={styles.socialLinks}>
+                <TouchableOpacity style={styles.socialButton}>
+                  {/* Social icon placeholder */}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  {/* Social icon placeholder */}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  {/* Social icon placeholder */}
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.socialButton}>
+                  {/* Social icon placeholder */}
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.footerBottom}>
+            <Text style={styles.copyright}>© 2025 RayTalog. Hak Cipta Dilindungi.</Text>
+          </View>
+        </View>
+      </ScrollView>
     </View>
-  )
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f9f9f9"
+  },
+  content: {
+    flexGrow: 1,
+    padding: 0,
+  },
+  heroSection: {
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 40,
+    backgroundColor: "#007BFF",
+  },
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  heroSubtitle: {
+    fontSize: 18,
+    color: "#fff",
+    textAlign: "center",
+    opacity: 0.9,
+  },
+  section: {
+    padding: 24,
+    marginVertical: 10,
+    backgroundColor: "#fff",
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  storyContainer: {
+    flexDirection: windowWidth > 768 ? "row" : "column",
+    alignItems: "center",
+  },
+  storyContent: {
+    flex: 1,
+  },
+  storyText: {
+    fontSize: 16,
+    color: "#555",
+    lineHeight: 24,
+    marginBottom: 16,
+    textAlign: "justify",
+  },
+  visionMissionContainer: {
+    marginVertical: 20,
+  },
+  visionContainer: {
+    marginBottom: 30,
+  },
+  missionContainer: {
+    marginBottom: 20,
+  },
+  subSectionTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 12,
+  },
+  visionMissionText: {
+    fontSize: 16,
+    color: "#555",
+    lineHeight: 24,
+  },
+  missionList: {
+    marginTop: 10,
+  },
+  missionItem: {
+    fontSize: 16,
+    color: "#555",
+    lineHeight: 24,
+    marginBottom: 8,
+  },
+  valuesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  valueCard: {
+    width: windowWidth > 768 ? "23%" : windowWidth > 500 ? "48%" : "100%",
+    backgroundColor: "#f8f8f8",
+    borderRadius: 8,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  valueIconPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#e0e0e0",
+    marginBottom: 16,
+  },
+  valueTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  valueDescription: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  servicesGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    gap: 16, 
+    marginTop: 24,
+  },
+  serviceCard: {
+    width: windowWidth > 768 ? "48%" : "100%",
+    backgroundColor: "#ffffff", 
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3, 
+  },
+  serviceIconPlaceholder: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: "#1E90FF", 
+    marginRight: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  serviceTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#222",
+    marginBottom: 6,
+  },
+  serviceDescription: {
+    fontSize: 15,
+    color: "#555",
+    flexShrink: 1, 
+  },
+  
+  ctaSection: {
+    padding: 40,
+    backgroundColor: "#f0f8ff",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  ctaTitle: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  ctaText: {
+    fontSize: 16,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 24,
+    maxWidth: 600,
+  },
+  ctaButton: {
+    backgroundColor: "#007BFF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 6,
+  },
+  ctaButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  footer: {
+    backgroundColor: "#333",
+    paddingTop: 40,
+    paddingBottom: 20,
+    marginTop: 'auto',
+  },
+  footerCol: {
+    width: windowWidth > 768 ? "30%" : "48%",
+    marginBottom: 20,
+  },
+  footerTop: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 30,
+  },
+  footerColTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 15,
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#ccc",
+    lineHeight: 20,
+  },
+  footerLink: {
+    fontSize: 14,
+    color: "#ccc",
+    marginBottom: 8,
+  },
+  socialLinks: {
+    flexDirection: "row",
+    marginTop: 10,
+  },
+  socialButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#444",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  footerBottom: {
+    borderTopWidth: 1,
+    borderTopColor: "#444",
+    paddingTop: 20,
+    paddingHorizontal: 20,
+  },
+  copyright: {
+    fontSize: 13,
+    color: "#999",
+    textAlign: "center",
+  },
+});

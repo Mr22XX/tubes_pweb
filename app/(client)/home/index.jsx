@@ -1,17 +1,17 @@
 // app/(client)/home/index.tsx
 import React from "react";
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Dimensions 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import Navbar from "../../../components/Navbar";
-import { router } from 'expo-router';
+import { router } from "expo-router";
 
-const windowWidth = Dimensions.get('window').width;
+const windowWidth = Dimensions.get("window").width;
 
 export default function Home() {
   // Promotional banners data
@@ -20,20 +20,20 @@ export default function Home() {
       id: 1,
       title: "Menu Spesial Ramadhan",
       subtitle: "Diskon hingga 30% untuk semua menu takjil",
-      color: "#FFD700"
+      color: "#FFD700",
     },
     {
       id: 2,
       title: "Paket Buka Puasa",
       subtitle: "Mulai dari Rp 50.000",
-      color: "#FF7F50"
+      color: "#FF7F50",
     },
     {
       id: 3,
       title: "Promo Minuman Segar",
       subtitle: "Beli 1 Gratis 1 untuk Es Kopi",
-      color: "#87CEEB"
-    }
+      color: "#87CEEB",
+    },
   ];
 
   // Featured products data - removed discount information
@@ -41,39 +41,42 @@ export default function Home() {
     {
       id: 1,
       name: "Nasi Padang Komplit",
-      price: 35000
+      price: 35000,
     },
     {
       id: 2,
       name: "Sate Ayam Madura",
-      price: 25000
+      price: 25000,
     },
     {
       id: 3,
       name: "Es Teh Manis",
-      price: 8000
+      price: 8000,
     },
     {
       id: 4,
       name: "Rendang Sapi",
-      price: 45000
-    }
+      price: 45000,
+    },
   ];
 
   // About website sections
   const aboutSections = [
     {
       title: "Pilihan Kuliner Terbaik",
-      description: "RayTalog menyediakan berbagai pilihan kuliner terbaik dari seluruh Indonesia dengan kualitas terjamin dan harga bersaing."
+      description:
+        "RayTalog menyediakan berbagai pilihan kuliner terbaik dari seluruh Indonesia dengan kualitas terjamin dan harga bersaing.",
     },
     {
       title: "Pengiriman Cepat",
-      description: "Kami menjamin pengiriman cepat dan aman untuk semua produk kuliner yang Anda pesan."
+      description:
+        "Kami menjamin pengiriman cepat dan aman untuk semua produk kuliner yang Anda pesan.",
     },
     {
       title: "Pembayaran Aman",
-      description: "Berbagai metode pembayaran yang aman dan terpercaya tersedia untuk kenyamanan Anda."
-    }
+      description:
+        "Berbagai metode pembayaran yang aman dan terpercaya tersedia untuk kenyamanan Anda.",
+    },
   ];
 
   return (
@@ -91,14 +94,14 @@ export default function Home() {
         {/* Promotional Banner Section */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Promo Spesial</Text>
-          <ScrollView 
-            horizontal 
+          <ScrollView
+            horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.promoContainer}
           >
-            {promoData.map(promo => (
-              <TouchableOpacity 
-                key={promo.id} 
+            {promoData.map((promo) => (
+              <TouchableOpacity
+                key={promo.id}
                 style={[styles.promoBanner, { backgroundColor: promo.color }]}
               >
                 <View style={styles.promoContent}>
@@ -109,7 +112,12 @@ export default function Home() {
                   </TouchableOpacity>
                 </View>
                 <View style={styles.promoImageContainer}>
-                  <View style={[styles.promoImagePlaceholder, { backgroundColor: `${promo.color}99` }]}>
+                  <View
+                    style={[
+                      styles.promoImagePlaceholder,
+                      { backgroundColor: `${promo.color}99` },
+                    ]}
+                  >
                     {/* Removed placeholder icon */}
                   </View>
                 </View>
@@ -126,9 +134,9 @@ export default function Home() {
               <Text style={styles.viewAllText}>Lihat Semua</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.productGrid}>
-            {featuredProducts.map(product => (
+            {featuredProducts.map((product) => (
               <TouchableOpacity key={product.id} style={styles.productCard}>
                 <View style={styles.productImageContainer}>
                   <View style={styles.productImagePlaceholder}>
@@ -136,11 +144,15 @@ export default function Home() {
                   </View>
                   {/* Removed discount badge */}
                 </View>
-                
+
                 <View style={styles.productInfo}>
-                  <Text style={styles.productName} numberOfLines={1}>{product.name}</Text>
+                  <Text style={styles.productName} numberOfLines={1}>
+                    {product.name}
+                  </Text>
                   <View style={styles.priceContainer}>
-                    <Text style={styles.price}>Rp {product.price.toLocaleString()}</Text>
+                    <Text style={styles.price}>
+                      Rp {product.price.toLocaleString()}
+                    </Text>
                     {/* Removed discounted price */}
                   </View>
                   {/* Removed rating container */}
@@ -154,23 +166,27 @@ export default function Home() {
         <View style={styles.aboutSection}>
           <Text style={styles.sectionTitle}>Tentang RayTalog</Text>
           <Text style={styles.aboutDescription}>
-            RayTalog adalah platform kuliner online yang menyediakan berbagai 
-            pilihan makanan dan minuman berkualitas dari seluruh Indonesia. 
-            Kami berkomitmen untuk memberikan pengalaman belanja yang terbaik 
-            dengan produk kuliner terjamin dan layanan pelanggan yang prima.
+            RayTalog adalah platform kuliner online yang menyediakan berbagai
+            pilihan makanan dan minuman berkualitas dari seluruh Indonesia. Kami
+            berkomitmen untuk memberikan pengalaman belanja yang terbaik dengan
+            produk kuliner terjamin dan layanan pelanggan yang prima.
           </Text>
-          
+
           <View style={styles.featuresContainer}>
             {aboutSections.map((section, index) => (
               <View key={index} style={styles.featureItem}>
                 {/* Removed feature icon */}
                 <Text style={styles.featureTitle}>{section.title}</Text>
-                <Text style={styles.featureDescription}>{section.description}</Text>
+                <Text style={styles.featureDescription}>
+                  {section.description}
+                </Text>
               </View>
             ))}
           </View>
-          
-          <TouchableOpacity style={styles.learnMoreButton}>
+          <TouchableOpacity
+            style={styles.learnMoreButton}
+            onPress={() => navigation.navigate("/(client)/about")} 
+          >
             <Text style={styles.learnMoreText}>Pelajari Lebih Lanjut</Text>
           </TouchableOpacity>
         </View>
@@ -182,7 +198,8 @@ export default function Home() {
             <View style={styles.footerCol}>
               <Text style={styles.footerColTitle}>RayTalog</Text>
               <Text style={styles.footerText}>
-                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan makanan dan minuman berkualitas.
+                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan
+                makanan dan minuman berkualitas.
               </Text>
             </View>
 
@@ -192,7 +209,9 @@ export default function Home() {
               <TouchableOpacity onPress={() => router.push("/(client)/about")}>
                 <Text style={styles.footerLink}>Tentang Kami</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push("/(client)/contact")}>
+              <TouchableOpacity
+                onPress={() => router.push("/(client)/contact")}
+              >
                 <Text style={styles.footerLink}>Kontak Kami</Text>
               </TouchableOpacity>
             </View>
@@ -218,7 +237,9 @@ export default function Home() {
           </View>
 
           <View style={styles.footerBottom}>
-            <Text style={styles.copyright}>© 2025 RayTalog. Hak Cipta Dilindungi.</Text>
+            <Text style={styles.copyright}>
+              © 2025 RayTalog. Hak Cipta Dilindungi.
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -227,9 +248,9 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     flex: 1,
-    backgroundColor: "#f9f9f9"
+    backgroundColor: "#f9f9f9",
   },
   content: {
     flexGrow: 1,
@@ -337,7 +358,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   productCard: {
-    width: windowWidth > 500 ? (windowWidth - 64) / 4 - 12 : (windowWidth - 48) / 2 - 8,
+    width:
+      windowWidth > 500
+        ? (windowWidth - 64) / 4 - 12
+        : (windowWidth - 48) / 2 - 8,
     backgroundColor: "#fff",
     borderRadius: 8,
     marginBottom: 16,
@@ -417,22 +441,31 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   learnMoreButton: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 12,
-    borderRadius: 6,
+    backgroundColor: "#1E90FF",
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
     alignItems: "center",
-    marginTop: 10,
+    justifyContent: "center",
+    marginTop: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
   },
   learnMoreText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontWeight: "700",
+    letterSpacing: 0.5,
   },
+
   footer: {
     backgroundColor: "#333",
     paddingTop: 40,
     paddingBottom: 20,
-    marginTop: 'auto',
+    marginTop: "auto",
   },
   footerCol: {
     width: windowWidth > 768 ? "30%" : "48%",

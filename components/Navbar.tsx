@@ -1,5 +1,5 @@
 // components/Navbar.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -8,12 +8,13 @@ import {
   StyleSheet,
   SafeAreaView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, usePathname } from "expo-router";
 
 export default function Navbar() {
   const router = useRouter();
+  const currentPathname = usePathname();
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPath, setCurrentPath] = useState("/(client)/home");
+  const [currentPath, setCurrentPath] = useState("");
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
 
   const navItems = [
@@ -27,6 +28,23 @@ export default function Navbar() {
     { name: "Profil Saya", icon: "👤", path: "/(client)/profile" },
     { name: "Keluar", icon: "📤", path: "/(auth)/logout", color: "#FF3B30" },
   ];
+
+  // Update current path when pathname changes
+  useEffect(() => {
+    // Find the matching nav item based on the current pathname
+    const matchedNavItem = navItems.find(item => {
+      // Convert paths to comparable format
+      const itemPathSegments = item.path.split('/');
+      const currentPathSegments = currentPathname.split('/');
+      
+      // Check if the last segment matches (e.g., "home", "about", etc.)
+      return itemPathSegments[itemPathSegments.length - 1] === currentPathSegments[currentPathSegments.length - 1];
+    });
+    
+    if (matchedNavItem) {
+      setCurrentPath(matchedNavItem.path);
+    }
+  }, [currentPathname]);
 
   const handleNavigation = (path: string) => {
     setCurrentPath(path);
@@ -48,6 +66,12 @@ export default function Navbar() {
     setTimeout(() => {
       router.push(path as any);
     }, 50);
+  };
+
+  // Function to get page title based on current path
+  const getPageTitle = () => {
+    const matchedItem = navItems.find(item => item.path === currentPath);
+    return matchedItem ? matchedItem.name : "";
   };
 
   return (
@@ -72,6 +96,15 @@ export default function Navbar() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Page Indicator */}
+        {currentPath && (
+          <View style={styles.pageIndicator}>
+            <Text style={styles.pageIndicatorText}>
+              Anda sedang di: <Text style={styles.currentPageName}>{getPageTitle()}</Text>
+            </Text>
+          </View>
+        )}
 
         {/* Navigation Items */}
         <View style={styles.navItems}>
@@ -175,6 +208,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#007BFF",
     marginRight: 15,
+  },
+  pageIndicator: {
+    position: "absolute",
+    top: -25,
+    left: 0,
+    right: 0,
+    backgroundColor: "#f8f9fa",
+    paddingVertical: 4,
+    paddingHorizontal: 30,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eaeaea",
+  },
+  pageIndicatorText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "center",
+  },
+  currentPageName: {
+    fontWeight: "bold",
+    color: "#007BFF",
   },
   searchContainer: {
     flexDirection: "row",
