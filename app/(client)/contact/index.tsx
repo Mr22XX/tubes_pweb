@@ -1,4 +1,3 @@
-// app/(client)/contact/index.tsx
 import React, { useState } from "react";
 import { 
   View, 
@@ -10,10 +9,12 @@ import {
   Dimensions,
   Linking,
   Image,
-  Alert
+  Alert,
+  Modal
 } from "react-native";
 import Navbar from "../../../components/Navbar";
-import { router } from 'expo-router';
+import { WebView } from 'react-native-webview';
+
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -22,6 +23,7 @@ export default function Contact() {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [subject, setSubject] = useState('');
+  const [isModalVisible, setIsModalVisible] = useState(false); // State for modal visibility
 
   // Contact information
   const contactInfo = [
@@ -32,7 +34,7 @@ export default function Contact() {
     },
     {
       title: "Email",
-      detail: "halo@raytalog.com",
+      detail: "halo@jajanin.com",
       icon: "✉️"
     },
     {
@@ -72,29 +74,47 @@ export default function Contact() {
   ];
 
   // Function to handle form submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!name || !email || !message) {
       Alert.alert("Form Tidak Lengkap", "Mohon lengkapi semua field yang diperlukan.");
       return;
     }
-    
-    // In a real app, you would send this data to your backend
-    Alert.alert(
-      "Pesan Terkirim",
-      "Terima kasih! Pesan Anda telah terkirim. Tim kami akan segera menghubungi Anda.",
-      [{ text: "OK", onPress: () => {
+  
+    try {
+      const response = await fetch('http://localhost:3000/saran', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nama: name,
+          email: email,
+          isi: message,
+        }),
+      });
+  
+      const result = await response.json();
+  
+      if (response.ok) {
+        setIsModalVisible(true);  // Show modal on successful submission
+        // Clear the input fields
         setName('');
         setEmail('');
-        setSubject('');
         setMessage('');
-      }}]
-    );
+        setSubject('');
+      } else {
+        Alert.alert("Error", result.message || "Terjadi kesalahan, coba lagi nanti.");
+      }
+    } catch (error) {
+      Alert.alert("Terjadi kesalahan", "Tidak dapat mengirimkan pesan, coba lagi nanti.");
+      console.error(error);
+    }
   };
-
+  
   // Function to open WhatsApp
   const openWhatsApp = () => {
     const whatsappNumber = "+6289515839924";
-    const message = "Halo RayTalog, saya ingin bertanya tentang ";
+    const message = "Halo Admin Jajanin, saya ingin bertanya tentang ";
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     
     Linking.canOpenURL(url)
@@ -122,18 +142,7 @@ export default function Contact() {
       .catch(err => Alert.alert("Terjadi kesalahan", "Tidak dapat membuka aplikasi email."));
   };
 
-  // Function to open social media links
-  const openSocialMedia = (url) => {
-    Linking.canOpenURL(url)
-      .then(supported => {
-        if (supported) {
-          return Linking.openURL(url);
-        } else {
-          Alert.alert("Tidak dapat membuka URL", "URL tidak didukung oleh perangkat Anda.");
-        }
-      })
-      .catch(err => Alert.alert("Terjadi kesalahan", "Tidak dapat membuka URL."));
-  };
+  
 
   // Function to open Google Maps in browser
   const openGoogleMaps = () => {
@@ -163,24 +172,49 @@ export default function Contact() {
           </Text>
         </View>
 
-        {/* Map Section - Using Static Image Instead */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Lokasi Kami</Text>
-          <View style={styles.mapContainer}>
-            {/* Using a placeholder image for the map */}
-            <Image
-              source={{ uri: "https://maps.googleapis.com/maps/api/staticmap?center=Jakarta+Selatan&zoom=14&size=600x300&maptype=roadmap&markers=color:red%7CJakarta+Selatan&key=YOUR_API_KEY_HERE" }}
-              style={styles.mapImage}
-              resizeMode="cover"
-            />
-            <TouchableOpacity 
-              style={styles.directionsButton} 
-              onPress={openGoogleMaps}
-            >
-              <Text style={styles.directionsButtonText}>Lihat di Google Maps</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+        {/* Map Section */}
+    <View style={{ marginBottom: 20, height: 300 }}>
+      <Text style={styles.sectionTitle}>Lokasi Kami</Text>
+      <WebView
+        style={{ flex: 1, borderRadius: 10 }}
+        source={{ html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+            <style> #map { height: 100%; width: 100%; border-radius: 10px; } </style>
+          </head>
+          <body>
+            <div id="map"></div>
+            <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+            <script>
+              var map = L.map('map').setView([-6.2607, 106.7816], 15);
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data © OpenStreetMap contributors',
+              }).addTo(map);
+              L.marker([-6.2607, 106.7816]).addTo(map)
+                .bindPopup('Jajanin.<br>Jl. Kuliner Indonesia No. 123.').openPopup();
+            </script>
+          </body>
+          </html>
+        ` }}
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+      />
+    </View>
+
+            <View style={styles.csButtonsContainers}>
+              <TouchableOpacity 
+                style={[styles.csButtons]} 
+                onPress={() => openGoogleMaps()}
+              >
+                <Text style={styles.csButtonIcon}>📍</Text>
+                <Text style={styles.csButtonTexts}>Lokasi</Text>
+              </TouchableOpacity>
+            </View>
+
+     
 
         {/* Contact Information Section */}
         <View style={styles.section}>
@@ -225,29 +259,9 @@ export default function Contact() {
           </View>
         </View>
 
-        {/* Social Media Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Media Sosial</Text>
-          <Text style={styles.socialText}>
-            Ikuti kami di media sosial untuk mendapatkan update terbaru, promo menarik, dan informasi kuliner lainnya.
-          </Text>
-          <View style={styles.socialMediaContainer}>
-            {socialMedia.map((social, index) => (
-              <TouchableOpacity 
-                key={index} 
-                style={styles.socialMediaButton}
-                onPress={() => openSocialMedia(social.url)}
-              >
-                <Text style={styles.socialMediaIcon}>{social.icon}</Text>
-                <Text style={styles.socialMediaName}>{social.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
         {/* Contact Form */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Kirim Pesan</Text>
+          <Text style={styles.sectionTitle}>Kirim Pesan / Saran</Text>
           <View style={styles.formContainer}>
             <View style={styles.formGroup}>
               <Text style={styles.label}>Nama*</Text>
@@ -273,82 +287,43 @@ export default function Contact() {
             </View>
             
             <View style={styles.formGroup}>
-              <Text style={styles.label}>Subjek</Text>
+              <Text style={styles.label}>Pesan / Saran*</Text>
               <TextInput
-                style={styles.input}
-                value={subject}
-                onChangeText={setSubject}
-                placeholder="Subjek pesan"
-                placeholderTextColor="#999"
-              />
-            </View>
-            
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Pesan*</Text>
-              <TextInput
-                style={[styles.input, styles.textArea]}
+                style={styles.textArea}
                 value={message}
                 onChangeText={setMessage}
-                placeholder="Tulis pesan Anda di sini..."
+                placeholder="Tuliskan pesan atau saran Anda"
                 multiline
-                numberOfLines={6}
                 placeholderTextColor="#999"
               />
             </View>
-            
-            <TouchableOpacity 
-              style={styles.submitButton} 
-              onPress={handleSubmit}
-            >
+
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
               <Text style={styles.submitButtonText}>Kirim Pesan</Text>
             </TouchableOpacity>
           </View>
         </View>
+      </ScrollView>
 
-        {/* Footer */}
-        <View style={styles.footer}>
-          <View style={styles.footerTop}>
-            {/* Kolom 1 */}
-            <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>RayTalog</Text>
-              <Text style={styles.footerText}>
-                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan makanan dan minuman berkualitas.
-              </Text>
-            </View>
-
-            {/* Kolom 2 */}
-            <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>Informasi</Text>
-              <TouchableOpacity onPress={() => router.push("/(client)/about")}>
-                <Text style={styles.footerLink}>Tentang Kami</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push("/(client)/contact")}>
-                <Text style={styles.footerLink}>Kontak Kami</Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* Kolom 3 */}
-            <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>Ikuti Kami</Text>
-              <View style={styles.socialLinks}>
-                {socialMedia.slice(0, 4).map((social, index) => (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={styles.socialButton}
-                    onPress={() => openSocialMedia(social.url)}
-                  >
-                    <Text>{social.icon}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.footerBottom}>
-            <Text style={styles.copyright}>© 2025 RayTalog. Hak Cipta Dilindungi.</Text>
+      {/* Modal for Successful Submission */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>Pesan berhasil dikirim!</Text>
+            <TouchableOpacity
+              style={styles.closeModalButton}
+              onPress={() => setIsModalVisible(false)}
+            >
+              <Text style={styles.closeModalButtonText}>Tutup</Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </ScrollView>
+      </Modal>
     </View>
   );
 }
@@ -356,266 +331,179 @@ export default function Contact() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f9f9f9"
-  },
-  content: {
-    flexGrow: 1,
-    padding: 0,
-  },
-  heroSection: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 40,
-    backgroundColor: "#007BFF",
-  },
-  heroTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  heroSubtitle: {
-    fontSize: 18,
-    color: "#fff",
-    textAlign: "center",
-    opacity: 0.9,
-  },
-  section: {
-    padding: 24,
-    marginVertical: 10,
     backgroundColor: "#fff",
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 20,
+  content: {
+    padding: 20,
+  },
+  heroSection: {
+    width:'100%',
     textAlign: "center",
+    height:100,
+    display:'flex',
+    justifyContent:'center',
+    alignItems:'center',
+    marginBottom: 20,
   },
-  // Map styles with static image
-  mapContainer: {
-    borderRadius: 8,
-    overflow: "hidden",
-    marginBottom: 16,
+  heroTitle: {
+    fontSize: 34,
+    fontWeight: "bold",
   },
-  mapImage: {
-    width: "100%",
-    height: 300,
-    backgroundColor: "#e0e0e0", // Placeholder color while loading
-  },
-  directionsButton: {
-    backgroundColor: "#007BFF",
-    padding: 12,
-    alignItems: "center",
-    marginTop: 10,
-    borderRadius: 6,
-  },
-  directionsButtonText: {
-    color: "#fff",
+  heroSubtitle: {
     fontSize: 16,
-    fontWeight: "600",
+    color: "#666",
+  },
+  section: {
+    marginBottom: 40,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
   contactCardsContainer: {
     flexDirection: "row",
-    flexWrap: "wrap",
     justifyContent: "space-between",
-    marginTop: 20,
+    flexWrap: "wrap",
   },
   contactCard: {
-    width: windowWidth > 768 ? "23%" : windowWidth > 500 ? "48%" : "100%",
+    width: "48%",
     backgroundColor: "#f8f8f8",
+    padding: 15,
     borderRadius: 8,
-    padding: 20,
-    marginBottom: 16,
-    alignItems: "center",
+    marginBottom: 10,
   },
   contactCardIcon: {
-    fontSize: 30,
-    marginBottom: 12,
+    fontSize: 24,
   },
   contactCardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#333",
-    marginBottom: 8,
-    textAlign: "center",
   },
   contactCardDetail: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    lineHeight: 20,
+    color: "#555",
   },
   csContainer: {
-    padding: 20,
     backgroundColor: "#f8f8f8",
+    padding: 15,
     borderRadius: 8,
+    marginBottom: 20,
   },
   csText: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#555",
-    lineHeight: 24,
     marginBottom: 20,
-    textAlign: "center",
   },
   csButtonsContainer: {
-    flexDirection: windowWidth > 500 ? "row" : "column",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  csButtonsContainers: {
+    flexDirection: "row",
+    width:'100%'
   },
   csButton: {
-    flexDirection: "row",
+    width: "48%",
+    padding: 10,
+    borderRadius: 8,
     alignItems: "center",
+    flexDirection: "row",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 50,
-    width: windowWidth > 500 ? "48%" : "100%",
-    maxWidth: 250,
+  },
+  csButtons: {
+    width: "100%",
+    padding: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    backgroundColor:"#0073e6"
   },
   whatsappButton: {
-    backgroundColor: "#25D366",
+    backgroundColor: "#25d366",
   },
   emailButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#0073e6",
   },
   csButtonIcon: {
-    fontSize: 18,
-    marginRight: 8,
+    fontSize: 20,
+    marginRight: 10,
   },
   csButtonText: {
+    fontSize: 16,
     color: "#fff",
+  },
+  csButtonTexts: {
     fontSize: 16,
-    fontWeight: "600",
-  },
-  socialText: {
-    fontSize: 16,
-    color: "#555",
-    lineHeight: 24,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  socialMediaContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 16,
-    marginTop: 10,
-  },
-  socialMediaButton: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: "#f0f0f0",
-    width: windowWidth > 768 ? "22%" : windowWidth > 500 ? "45%" : "100%",
-    maxWidth: 180,
-  },
-  socialMediaIcon: {
-    fontSize: 28,
-    marginBottom: 8,
-  },
-  socialMediaName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    color: "#fff",
   },
   formContainer: {
-    padding: 20,
     backgroundColor: "#f8f8f8",
+    padding: 15,
     borderRadius: 8,
   },
   formGroup: {
-    marginBottom: 16,
+    marginBottom: 15,
   },
   label: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 6,
+    fontSize: 14,
+    marginBottom: 5,
   },
   input: {
-    backgroundColor: "#fff",
+    height: 40,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 6,
-    padding: 12,
-    fontSize: 16,
-    color: "#333",
+    borderColor: "#ccc",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    fontSize: 14,
   },
   textArea: {
-    height: 150,
+    height: 100,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    fontSize: 14,
     textAlignVertical: "top",
   },
   submitButton: {
-    backgroundColor: "#007BFF",
-    paddingVertical: 14,
-    borderRadius: 6,
+    backgroundColor: "#4caf50",
+    paddingVertical: 10,
+    borderRadius: 5,
     alignItems: "center",
-    marginTop: 10,
   },
   submitButtonText: {
-    color: "#fff",
     fontSize: 16,
-    fontWeight: "600",
-  },
-  footer: {
-    backgroundColor: "#333",
-    paddingTop: 40,
-    paddingBottom: 20,
-    marginTop: 'auto',
-  },
-  footerCol: {
-    width: windowWidth > 768 ? "30%" : "48%",
-    marginBottom: 20,
-  },
-  footerTop: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 30,
-  },
-  footerColTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
     color: "#fff",
-    marginBottom: 15,
   },
-  footerText: {
-    fontSize: 14,
-    color: "#ccc",
-    lineHeight: 20,
-  },
-  footerLink: {
-    fontSize: 14,
-    color: "#ccc",
-    marginBottom: 8,
-  },
-  socialLinks: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
-  socialButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#444",
+  modalOverlay: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 10,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  footerBottom: {
-    borderTopWidth: 1,
-    borderTopColor: "#444",
-    paddingTop: 20,
-    paddingHorizontal: 20,
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "80%",
   },
-  copyright: {
-    fontSize: 13,
-    color: "#999",
-    textAlign: "center",
+  modalText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  closeModalButton: {
+    backgroundColor: "#4caf50",
+    paddingVertical: 10,
+    borderRadius: 5,
+    width: "100%",
+    alignItems: "center",
+  },
+  closeModalButtonText: {
+    color: "#fff",
+    fontSize: 16,
   },
 });

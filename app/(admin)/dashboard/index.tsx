@@ -1,130 +1,203 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, SafeAreaView } from 'react-native';
+import { router } from 'expo-router';
 
-export default function AdminDashboard() {
-  const router = useRouter();
-  
+const AdminDashboard = () => {
+  const handleLogout = () => {
+    router.push('/login')
+    console.log('Logging out...');
+  };
+
+  const [countUser, setCountUser] = useState(0);
+  const [countProduk, setCountProduk] = useState(0);
+
+  useEffect(()=>{
+    fetch('http://localhost:3000/user/count')
+    .then((response) => response.json())
+    .then((data) => setCountUser(data.total_users))
+    .catch((error) => console.error("error : ", error))
+  },[])
+
+  useEffect(() =>{
+    fetch('http://localhost:3000/produk/count')
+    .then((response) => response.json())
+    .then((data) => setCountProduk(data.total_produk))
+    .catch((error) => console.error("error : ", error))
+  })
+
+
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Admin Dashboard</Text>
-        <TouchableOpacity 
-          style={styles.clientButton}
-          onPress={() => router.push('/(client)/home')}
-        >
-          <Text style={styles.clientButtonText}>View Site</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.sidebar}>
+        <Text style={styles.sidebarTitle}>Admin Panel</Text>
+        <TouchableOpacity style={styles.sidebarItem}>
+          <Text style={styles.sidebarItemText}>Dashboard</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={()=>router.push('/manage-produk')} style={styles.sidebarItem}>
+          <Text style={styles.sidebarItemText}>Manage Produk</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={()=>router.push('/manage-user')} style={styles.sidebarItem}>
+          <Text style={styles.sidebarItemText}>Manage Users</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.sidebarItem} onPress={()=>router.push('/manage-promo')}>
+          <Text style={styles.sidebarItemText}>Manage Promo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.sidebarItem} onPress={()=>router.push('/manage-produk-promo')}>
+          <Text style={styles.sidebarItemText}>Manage Produk Promo</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.sidebarItem} onPress={()=>router.push('/saran')}>
+          <Text style={styles.sidebarItemText}>Saran dari user</Text>
         </TouchableOpacity>
       </View>
-      
-      {/* Stats Summary */}
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>42</Text>
-          <Text style={styles.statLabel}>Total Products</Text>
+
+      <ScrollView style={styles.mainContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>Admin Dashboard</Text>
+          <View style={styles.headerRight}>
+            <Text style={styles.headerRightText}>Welcome, Admin</Text>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+              <Text style={styles.logoutText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>128</Text>
-          <Text style={styles.statLabel}>Users</Text>
+
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{countProduk}</Text>
+            <Text style={styles.statLabel}>Total Produk</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>{countUser}</Text>
+            <Text style={styles.statLabel}>User</Text>
+          </View>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statValue}>256</Text>
-          <Text style={styles.statLabel}>Orders</Text>
-        </View>
-      </View>
-      
-      {/* Quick Links */}
-      <View style={styles.linksContainer}>
-        <TouchableOpacity 
-          style={styles.linkCard}
-          onPress={() => router.push('/(admin)/products')}
-        >
-          <Text style={styles.linkTitle}>Manage Products</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.linkCard}
-          onPress={() => router.push('/(admin)/users')}
-        >
-          <Text style={styles.linkTitle}>Manage Users</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+
+       
+      </ScrollView>
+    </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9fafb',
-    padding: 16,
+    flexDirection: 'row',
+  },
+  sidebar: {
+    width: 250,
+    backgroundColor: '#2E3B4E',
+    paddingTop: 30,
+    paddingLeft: 20,
+    paddingBottom: 20,
+    height: '100%',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  sidebarTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 30,
+  },
+  sidebarItem: {
+    paddingVertical: 10,
+  },
+  sidebarItemText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '500',
+  },
+  mainContent: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#F5F7FA',
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 30,
+    backgroundColor: '#1F2A37',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
   },
-  title: {
-    fontSize: 24,
+  headerTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-  },
-  clientButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  clientButtonText: {
     color: 'white',
-    fontWeight: '500',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerRightText: {
+    color: 'white',
+    fontSize: 16,
+    marginRight: 20,
+  },
+  logoutButton: {
+    backgroundColor: '#FF3B30',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  logoutText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 24,
+    marginBottom: 30,
   },
   statCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
     flex: 1,
-    borderRadius: 8,
-    padding: 16,
-    marginHorizontal: 4,
-    alignItems: 'center',
+    borderRadius: 15,
+    padding: 20,
+    marginHorizontal: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowRadius: 6,
+    elevation: 4,
+    alignItems: 'center',
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#2563eb',
+    color: '#1F2A37',
   },
   statLabel: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginTop: 4,
+    fontSize: 16,
+    color: '#6B7280',
+    marginTop: 8,
   },
-  linksContainer: {
+  quickLinksContainer: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  linkCard: {
-    backgroundColor: 'white',
+  quickLinkCard: {
+    backgroundColor: '#1F2A37',
     flex: 1,
-    borderRadius: 8,
-    padding: 24,
-    marginHorizontal: 4,
+    marginVertical: 10,
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 10,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
   },
-  linkTitle: {
-    fontSize: 16,
+  quickLinkText: {
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#2563eb',
+    color: 'white',
   },
 });
+
+export default AdminDashboard;

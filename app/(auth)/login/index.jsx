@@ -1,237 +1,230 @@
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  SafeAreaView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import React, { useState } from 'react';
+import { View, Text, TextInput, StyleSheet, Button, TouchableOpacity, Modal } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
 
-export default function Login({ navigation }) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
-  const router = useRouter();
+const LoginScreen = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleLogin = () => {
-    // Login functionality would go here
-    console.log("Login pressed with:", username, password);
-    // Navigation would happen here after successful login
+  // Fungsi untuk memvalidasi format email
+  const validateEmail = (email) => {
+    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return regex.test(email);
   };
 
-  const navigateToRegister = () => {
-    // Navigate to register page
-    router.push("/(auth)/register");
-    // navigation.navigate('Register');
+  const handleLogin = async () => {
+    if (!email || !password) {
+      setErrorMessage('Email dan password tidak boleh kosong!');
+      return;
+    }
+
+    // Validasi format email
+    if (!validateEmail(email)) {
+      setErrorMessage('Format email tidak valid!');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      console.log('API Response:', data); // Debugging API response
+
+      if (response.status === 200) {
+        // Pastikan data.user ada dan formatnya benar
+        if (data.user) {
+          // Simpan data user ke AsyncStorage
+          await AsyncStorage.setItem('userToken', JSON.stringify(data.user));
+          await AsyncStorage.setItem('userName', data.user.nama);  // Simpan nama pengguna
+          await AsyncStorage.setItem('userId', data.user.id);  // Simpan nama pengguna
+          
+          // Cek apakah data sudah tersimpan
+          const storedUser = await AsyncStorage.getItem('userToken');
+          console.log('Stored User:', JSON.parse(storedUser)); // Verifikasi apakah data tersimpan dengan benar
+
+          setModalMessage('Login Berhasil!');
+          setModalVisible(true);
+        } else {
+          setModalMessage('Data pengguna tidak ditemukan!');
+          setModalVisible(true);
+        }
+      } else {
+        setModalMessage('Email atau password salah!');
+        setModalVisible(true);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      setModalMessage('Terjadi kesalahan, coba lagi nanti!');
+      setModalVisible(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const navigateToForgotPassword = () => {
-    // Navigate to forgot password page
-    console.log("Navigate to forgot password");
-    // navigation.navigate('ForgotPassword');
-  };
+  const handleModalClose = async () => {
+    setModalVisible(false);
 
-  const navigateToHome = () => {
-    router.push("/");
+    if (modalMessage === 'Login Berhasil!') {
+      try {
+        const userString = await AsyncStorage.getItem('userToken');
+        const storedUserName = await AsyncStorage.getItem('userName');  // Ambil nama pengguna
+
+        if (userString) {
+          const user = JSON.parse(userString);
+          console.log('Parsed User:', user); // Verifikasi data user yang diambil dari AsyncStorage
+
+          if (user?.role) {
+            console.log('Stored User Name:', storedUserName);  // Verifikasi nama pengguna
+            // Cek apakah role user dikenali
+            if (user.role === 'admin') {
+              router.push('/dashboard');  // Redirect ke halaman admin
+            } else if (user.role === 'user') {
+              router.push('/home');  // Redirect ke halaman user
+            } else {
+              console.warn('Role tidak dikenali:', user.role);
+              router.push('/login');  // Jika role tidak dikenali, kembali ke login
+            }
+          } else {
+            console.warn('User tidak ditemukan atau tidak ada role.');
+            router.push('/login');
+          }
+        } else {
+          console.warn('Data user tidak ditemukan di AsyncStorage.');
+          router.push('/login');
+        }
+      } catch (error) {
+        console.error('Gagal membaca data dari AsyncStorage:', error);
+        router.push('/login');  // Jika ada error, kembali ke login
+      }
+    }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <TouchableOpacity
-        style={styles.backIconContainer}
-        onPress={navigateToHome}
-      >
-        <Ionicons name="arrow-back" size={28} color="black" />
+    <View style={styles.container}>
+      <Text style={styles.titles}>Jajanin</Text>
+      <Text style={styles.title}>Login</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
+      <Button
+        title={loading ? 'Loading...' : 'Login'}
+        onPress={handleLogin}
+        color="#4CAF50"
+        disabled={loading}
+      />
+
+      <TouchableOpacity onPress={() => router.push('/register')}>
+        <Text style={styles.registerText}>Belum punya akun? Daftar</Text>
       </TouchableOpacity>
 
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.keyboardAvoidingView}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
       >
-        <View style={styles.background}>
-          {/* Card-based login form */}
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Login Form</Text>
-
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Username"
-                value={username}
-                onChangeText={setUsername}
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
-            </View>
-
-            <View style={styles.optionsRow}>
-              <View style={styles.rememberMeContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.checkbox,
-                    rememberMe ? styles.checkboxChecked : {},
-                  ]}
-                  onPress={() => setRememberMe(!rememberMe)}
-                >
-                  {rememberMe && (
-                    <Text style={styles.checkboxIcon}>✔</Text> // ✅ muncul centang kalau rememberMe true
-                  )}
-                </TouchableOpacity>
-                <Text style={styles.rememberMeText}>Remember me</Text>
-              </View>
-
-              <TouchableOpacity onPress={navigateToForgotPassword}>
-                <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-              <Text style={styles.loginButtonText}>Login</Text>
-            </TouchableOpacity>
-
-            <View style={styles.registerContainer}>
-              <Text style={styles.registerText}>Don't have an account? </Text>
-              <TouchableOpacity onPress={navigateToRegister}>
-                <Text style={styles.registerLinkText}>Register</Text>
-              </TouchableOpacity>
-            </View>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalText}>{modalMessage}</Text>
+            <Button title="OK" onPress={handleModalClose} />
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </Modal>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    justifyContent: 'center',
+    padding: 16,
+    backgroundColor: '#F9F9F9',
   },
-  keyboardAvoidingView: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
   },
-  background: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  backIconContainer: {
-    position: "absolute",
-    top: 40,
-    left: 20,
-    zIndex: 10,
-  },
-  card: {
-    backgroundColor: "#ffffff",
-    borderRadius: 20,
-    padding: 12,
-    width: "150%",
-    maxWidth: 700,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 8,
-    alignSelf: "center",
-  },
-
-  cardTitle: {
-    color: "#000",
-    fontSize: 26,
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  inputContainer: {
-    marginBottom: 18,
+  titles: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginTop: 40,
+    marginLeft: 20,
+    position: 'absolute',
+    top: 0,
+    color: '#4CAF50',
   },
   input: {
-    backgroundColor: "#fff",
+    height: 50,
+    borderColor: '#ccc',
     borderWidth: 1,
-    borderColor: "#ccc",
     borderRadius: 8,
-    color: "#333",
-    height: 52,
-    paddingHorizontal: 16,
+    marginBottom: 15,
+    paddingHorizontal: 10,
     fontSize: 16,
+    backgroundColor: '#fff',
   },
-  optionsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  rememberMeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkbox: {
-    width: 20,
-    height: 20,
-    borderWidth: 2,
-    borderColor: "#4caf50",
-    borderRadius: 4,
-    marginRight: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: "#4caf50",
-  },
-  checkboxIcon: {
-    color: "white",
+  errorText: {
+    color: '#FF3B30',
     fontSize: 14,
-    fontWeight: "bold",
-  },
-  rememberMeText: {
-    color: "#555",
-    fontSize: 14,
-  },
-  forgotPasswordText: {
-    color: "#4caf50",
-    fontSize: 14,
-  },
-  loginButton: {
-    backgroundColor: "#4caf50",
-    borderRadius: 8,
-    height: 52,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 18,
-  },
-  loginButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  registerContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    marginBottom: 10,
+    textAlign: 'center',
   },
   registerText: {
-    color: "#777",
-    fontSize: 14,
+    textAlign: 'center',
+    color: '#4CAF50',
+    marginTop: 20,
+    fontSize: 16,
   },
-  registerLinkText: {
-    color: "#4caf50",
-    fontSize: 14,
-    fontWeight: "bold",
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
   },
 });
+
+export default LoginScreen;

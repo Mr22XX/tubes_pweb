@@ -6,10 +6,12 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  Dimensions 
+  Dimensions, 
+  Linking
 } from "react-native";
 import Navbar from "../../../components/Navbar";
 import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const windowWidth = Dimensions.get('window').width;
 
@@ -18,19 +20,26 @@ export default function About() {
   const values = [
     {
       title: "Kualitas",
-      description: "Kami hanya menyediakan produk kuliner terbaik dan berkualitas tinggi."
+      description: "Kami hanya menyediakan produk kuliner terbaik dan berkualitas tinggi.",
+      icon : "checkmark-outline"
+
     },
     {
       title: "Keberagaman",
-      description: "Menghargai keberagaman kuliner Indonesia dari Sabang sampai Merauke."
+      description: "Menghargai keberagaman kuliner Indonesia dari Sabang sampai Merauke.",
+      icon : "walk-outline"
     },
     {
       title: "Inovasi",
-      description: "Terus berinovasi untuk memberikan pengalaman kuliner terbaik."
+      description: "Terus berinovasi untuk memberikan pengalaman kuliner terbaik.",
+      icon : "rocket-outline"
+
     },
     {
       title: "Kepuasan Pelanggan",
-      description: "Fokus utama kami adalah memberikan kepuasan maksimal kepada setiap pelanggan."
+      description: "Fokus utama kami adalah memberikan kepuasan maksimal kepada setiap pelanggan.",
+      icon : "stats-chart-outline"
+
     }
   ];
 
@@ -38,21 +47,30 @@ export default function About() {
   const services = [
     {
       title: "Katalog Kuliner",
-      description: "Akses ke ribuan pilihan makanan dan minuman berkualitas dari seluruh Indonesia."
     },
     {
       title: "Pengiriman Cepat",
-      description: "Layanan pengiriman yang cepat dan aman untuk menjaga kualitas makanan tetap baik."
     },
     {
       title: "Pembayaran Mudah",
-      description: "Berbagai metode pembayaran yang aman dan nyaman untuk semua pengguna."
     },
     {
       title: "Layanan Pelanggan",
-      description: "Tim dukungan yang siap membantu Anda dengan segala pertanyaan dan kebutuhan."
     }
   ];
+
+  const handleInsta = () =>{
+    Linking.openURL('https://instagram.com')
+  }
+  const handleLinkedin = () =>{
+    Linking.openURL('https://linkedin.com')
+  }
+  const handleFacebook = () =>{
+    Linking.openURL('https://facebook.com')
+  }
+  const handleGithub = () =>{
+    Linking.openURL('https://github.com')
+  }
 
   return (
     <View style={styles.container}>
@@ -60,7 +78,7 @@ export default function About() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <Text style={styles.heroTitle}>Tentang RayTalog</Text>
+          <Text style={styles.heroTitle}>Tentang Jajanin</Text>
           <Text style={styles.heroSubtitle}>
             Platform Kuliner Terlengkap di Indonesia
           </Text>
@@ -72,17 +90,13 @@ export default function About() {
           <View style={styles.storyContainer}>
             <View style={styles.storyContent}>
               <Text style={styles.storyText}>
-                RayTalog adalah platform kuliner digital yang menghubungkan penikmat kuliner 
+                Jajanin adalah platform kuliner digital yang menghubungkan penikmat kuliner 
                 dengan berbagai pilihan makanan dan minuman terbaik dari seluruh Indonesia. Sebagai 
                 katalog kuliner komprehensif, kami menyediakan akses mudah ke ratusan menu berkualitas.
               </Text>
+              
               <Text style={styles.storyText}>
-                Nama "RayTalog" berasal dari kata "Ray" yang melambangkan sinar atau cahaya, dan 
-                "Talog" yang merupakan singkatan dari "Katalog". Kami hadir untuk menerangi dunia 
-                kuliner Indonesia dan memperkenalkannya kepada masyarakat luas.
-              </Text>
-              <Text style={styles.storyText}>
-                Saat ini, RayTalog telah menjadi platform kuliner terpercaya yang menyediakan 
+                Saat ini, Jajanin telah menjadi platform kuliner terpercaya yang menyediakan 
                 pengalaman berbelanja kuliner terbaik dengan sistem pemesanan yang mudah dan aman.
               </Text>
             </View>
@@ -119,9 +133,7 @@ export default function About() {
           <View style={styles.valuesGrid}>
             {values.map((value, index) => (
               <View key={index} style={styles.valueCard}>
-                <View style={styles.valueIconPlaceholder}>
-                  {/* Placeholder for value icon */}
-                </View>
+                <Ionicons style={styles.icons} name={value.icon}></Ionicons>
                 <Text style={styles.valueTitle}>{value.title}</Text>
                 <Text style={styles.valueDescription}>{value.description}</Text>
               </View>
@@ -129,25 +141,10 @@ export default function About() {
           </View>
         </View>
 
-        {/* Our Services */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Layanan Kami</Text>
-          <View style={styles.servicesGrid}>
-            {services.map((service, index) => (
-              <View key={index} style={styles.serviceCard}>
-                <View style={styles.serviceIconPlaceholder}>
-                  {/* Placeholder for service icon */}
-                </View>
-                <Text style={styles.serviceTitle}>{service.title}</Text>
-                <Text style={styles.serviceDescription}>{service.description}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
 
         {/* Call to action */}
         <View style={styles.ctaSection}>
-          <Text style={styles.ctaTitle}>Jelajahi RayTalog Sekarang</Text>
+          <Text style={styles.ctaTitle}>Jelajahi Jajanin Sekarang</Text>
           <Text style={styles.ctaText}>
             Temukan beragam pilihan kuliner terbaik untuk memuaskan selera Anda. 
             Nikmati kemudahan berbelanja dan pengalaman kuliner yang tak terlupakan.
@@ -165,7 +162,7 @@ export default function About() {
           <View style={styles.footerTop}>
             {/* Kolom 1 */}
             <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>RayTalog</Text>
+              <Text style={styles.footerColTitle}>Jajanin</Text>
               <Text style={styles.footerText}>
                 Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan makanan dan minuman berkualitas.
               </Text>
@@ -186,24 +183,24 @@ export default function About() {
             <View style={styles.footerCol}>
               <Text style={styles.footerColTitle}>Ikuti Kami</Text>
               <View style={styles.socialLinks}>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Social icon placeholder */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleInsta}>
+                <Ionicons style={styles.iconss} name="logo-instagram"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Social icon placeholder */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleLinkedin}>
+                <Ionicons style={styles.iconss} name="logo-linkedin"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Social icon placeholder */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleFacebook}>
+                <Ionicons style={styles.iconss} name="logo-facebook"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Social icon placeholder */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleGithub}>
+                <Ionicons style={styles.iconss} name="logo-github"></Ionicons>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
           <View style={styles.footerBottom}>
-            <Text style={styles.copyright}>© 2025 RayTalog. Hak Cipta Dilindungi.</Text>
+            <Text style={styles.copyright}>© 2025 Jajanin. Hak Cipta Dilindungi.</Text>
           </View>
         </View>
       </ScrollView>
@@ -224,13 +221,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     padding: 40,
-    backgroundColor: "#007BFF",
+    backgroundColor: "#4CAF50",
   },
   heroTitle: {
     fontSize: 32,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 12,
+    textAlign: "center",
+  },
+  icons: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "black",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  iconss: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "white",
     textAlign: "center",
   },
   heroSubtitle: {
@@ -391,7 +401,7 @@ const styles = StyleSheet.create({
     maxWidth: 600,
   },
   ctaButton: {
-    backgroundColor: "#007BFF",
+    backgroundColor: "#4CAF50",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 6,
@@ -442,7 +452,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#444",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,

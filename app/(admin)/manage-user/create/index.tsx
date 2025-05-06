@@ -2,27 +2,26 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Button, Alert, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { router } from 'expo-router';
 
-
-
-const RegisterScreen = () => {
+const CreateUserScreen = () => {
   const [nama, setNama] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);  // State untuk modal
   const [modalMessage, setModalMessage] = useState('');  // Pesan untuk modal
-
   const [errors, setErrors] = useState({
     nama: '',
     email: '',
-    password: ''
+    password: '',
+    role: '',
   });
 
-  // Fungsi untuk menangani submit registrasi
-  const handleRegister = async () => {
+  // Fungsi untuk menangani submit create user
+  const handleCreateUser = async () => {
     // Validasi form
     let formIsValid = true;
-    const newErrors = { nama: '', email: '', password: '' };
+    const newErrors = { nama: '', email: '', password: '', role: '' };
 
     if (!nama) {
       formIsValid = false;
@@ -39,6 +38,11 @@ const RegisterScreen = () => {
       newErrors.password = 'Password tidak boleh kosong';
     }
 
+    if (!role) {
+      formIsValid = false;
+      newErrors.role = 'Role tidak boleh kosong';
+    }
+
     if (!formIsValid) {
       setErrors(newErrors);  // Menampilkan pesan error
       return;  // Jangan lanjutkan jika form tidak valid
@@ -48,13 +52,12 @@ const RegisterScreen = () => {
     setErrors({}); // Menghapus error jika form sudah valid
 
     try {
-      const response = await fetch('http://localhost:3000/register', {
+      const response = await fetch('http://localhost:3000/register-admin', {  // Pastikan API URL sesuai
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nama, email, password }),
+        body: JSON.stringify({ nama, email, password, role }),
       });
 
-      // Log respons dari server
       const data = await response.json();
       console.log('Response dari server:', data);
 
@@ -77,9 +80,7 @@ const RegisterScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.titles}>Jajanin</Text>
-
-      <Text style={styles.title}>Daftar Akun Baru</Text>
+      <Text style={styles.title}>Tambah User Baru</Text>
 
       {/* Input Nama */}
       <TextInput
@@ -110,17 +111,26 @@ const RegisterScreen = () => {
       />
       {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
 
-      {/* Tombol Register */}
+      {/* Input Role */}
+      <TextInput
+        style={[styles.input, errors.role && styles.inputError]}  // Menambahkan style error
+        placeholder="Role"
+        value={role}
+        onChangeText={setRole}
+      />
+      {errors.role && <Text style={styles.errorText}>{errors.role}</Text>}
+
+      {/* Tombol Create User */}
       <Button
-        title={loading ? 'Loading...' : 'Daftar'}
-        onPress={handleRegister}
-        color="#4CAF50"
+        title={loading ? 'Loading...' : 'Buat User'}
+        onPress={handleCreateUser}
+        color="#2196F3"
         disabled={loading}
       />
 
-      {/* Tombol untuk ke halaman Login */}
-      <TouchableOpacity onPress={() => router.push('/login')}>
-        <Text style={styles.loginText}>Sudah punya akun? Masuk</Text>
+      {/* Tombol untuk kembali ke halaman daftar user */}
+      <TouchableOpacity onPress={() => router.push('/manage-user')}>
+        <Text style={styles.backText}>Kembali ke Daftar User</Text>
       </TouchableOpacity>
 
       {/* Modal untuk menampilkan pesan */}
@@ -152,16 +162,6 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#F9F9F9',
   },
-  titles: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'left',
-    marginTop: 40,
-    marginLeft: 20,
-    position:'absolute',
-    top:0,
-    color: '#4CAF50',
-  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -187,9 +187,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 10,
   },
-  loginText: {
+  backText: {
     textAlign: 'center',
-    color: '#4CAF50',
+    color: '#2196F3',
     marginTop: 20,
     fontSize: 16,
   },
@@ -212,4 +212,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default CreateUserScreen;

@@ -1,66 +1,84 @@
-// app/(client)/home/index.tsx
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Dimensions,
-} from "react-native";
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Image, Linking } from "react-native";
 import Navbar from "../../../components/Navbar";
 import { router } from "expo-router";
+import { Link } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { Ionicons } from '@expo/vector-icons';
 
 const windowWidth = Dimensions.get("window").width;
 
 export default function Home() {
-  // Promotional banners data
-  const promoData = [
-    {
-      id: 1,
-      title: "Menu Spesial Ramadhan",
-      subtitle: "Diskon hingga 30% untuk semua menu takjil",
-      color: "#FFD700",
-    },
-    {
-      id: 2,
-      title: "Paket Buka Puasa",
-      subtitle: "Mulai dari Rp 50.000",
-      color: "#FF7F50",
-    },
-    {
-      id: 3,
-      title: "Promo Minuman Segar",
-      subtitle: "Beli 1 Gratis 1 untuk Es Kopi",
-      color: "#87CEEB",
-    },
+  const [produk, setProduk] = useState<Produk[]>([]);
+  const [promo, setPromo] = useState<Promo[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // Menyimpan status login
+  const [userName, setUserName] = useState<string>(''); // Menyimpan nama pengguna
+
+
+  const checkLoginStatus = async () => {
+    try {
+      const userToken = await AsyncStorage.getItem("userToken");
+      const storedUserName = await AsyncStorage.getItem("userName"); // Ambil nama pengguna
+      const storedUserId = await AsyncStorage.getItem("userId"); // Ambil nama pengguna
+      if (userToken && storedUserName && storedUserId) {
+        setIsLoggedIn(true); // Pengguna sudah login
+        setUserName(storedUserName); // Set nama pengguna
+        setUserId(storedUserId); // Set nama pengguna
+      } else {
+        setIsLoggedIn(false); // Pengguna belum login
+        router.push("/login"); // Arahkan ke halaman login jika belum login
+      }
+    } catch (error) {
+      console.error("Error checking login status", error);
+    }
+  };
+
+  const fetchProduk = async () => {
+    const response = await fetch("http://localhost:3000/produk/limit/4", {
+      method: "GET",
+    });
+    const responseJson = (await response.json()) as Produk[];
+    setProduk(responseJson);
+  };
+
+  useEffect(() => {
+    checkLoginStatus(); // Cek status login saat komponen pertama kali di-render
+    fetchProduk(); // Ambil produk
+  }, []);
+  
+  const fetchPromo = async () => {
+    const response = await fetch("http://localhost:3000/promo", {
+      method: "GET",
+    });
+    const responseJson = (await response.json()) as Promo[];
+    setPromo(responseJson);
+  };
+
+  useEffect(() => {
+    checkLoginStatus(); // Cek status login saat komponen pertama kali di-render
+    fetchPromo(); // Ambil produk
+  }, []);
+
+  // Color promosi
+  const colorPromo = [
+    { color: "#FFD700" },  // Gold
+    { color: "#FF7F50" },  // Coral
+    { color: "#87CEEB" },  // SkyBlue
+    { color: "#32CD32" },  // LimeGreen
+    { color: "#FF4500" },  // OrangeRed
+    { color: "#8A2BE2" },  // BlueViolet
+    { color: "#FF1493" },  // DeepPink
+    { color: "#00BFFF" },  // DeepSkyBlue
+    { color: "#F0E68C" },  // Khaki
+    { color: "#48D1CC" },  // MediumTurquoise
+    { color: "#FFD700" },  // Gold (repeated, useful for promo highlights)
+    { color: "#D2691E" },  // Chocolate
+    { color: "#7FFF00" },  // Chartreuse
+    { color: "#FF6347" },  // Tomato
+    { color: "#00FA9A" },  // MediumSpringGreen
   ];
 
-  // Featured products data - removed discount information
-  const featuredProducts = [
-    {
-      id: 1,
-      name: "Nasi Padang Komplit",
-      price: 35000,
-    },
-    {
-      id: 2,
-      name: "Sate Ayam Madura",
-      price: 25000,
-    },
-    {
-      id: 3,
-      name: "Es Teh Manis",
-      price: 8000,
-    },
-    {
-      id: 4,
-      name: "Rendang Sapi",
-      price: 45000,
-    },
-  ];
-
-  // About website sections
+  // Bagian tentang website
   const aboutSections = [
     {
       title: "Pilihan Kuliner Terbaik",
@@ -79,13 +97,33 @@ export default function Home() {
     },
   ];
 
+  if (!isLoggedIn) {
+    return null; // Menunggu status login sebelum merender halaman Home
+  }
+
+   const handleInsta = () => {
+      Linking.openURL('https://instagram.com');
+    }
+
+    const handleLinkedin = () => {
+      Linking.openURL('https://linkedin.com');
+    }
+
+    const handleFacebook = () => {
+      Linking.openURL('https://facebook.com');
+    }
+
+    const handleGithub = () => {
+      Linking.openURL('https://github.com');
+    }
+
   return (
     <View style={styles.container}>
       <Navbar />
       <ScrollView contentContainerStyle={styles.content}>
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Selamat Datang di RayTalog!</Text>
+        <Text style={styles.welcomeText}>Selamat Datang di Jajanin, {userName || "Pengguna"} !</Text>
           <Text style={styles.welcomeSubtext}>
             Temukan kuliner terbaik untuk memuaskan selera Anda
           </Text>
@@ -99,11 +137,12 @@ export default function Home() {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.promoContainer}
           >
-            {promoData.map((promo) => (
+            {promo.map((promo, index) => (
               <TouchableOpacity
                 key={promo.id}
-                style={[styles.promoBanner, { backgroundColor: promo.color }]}
+                style={[styles.promoBanner, { backgroundColor: colorPromo[index % colorPromo.length].color }]}
               >
+              <Link href={`/promo/${promo.id}`} >
                 <View style={styles.promoContent}>
                   <Text style={styles.promoTitle}>{promo.title}</Text>
                   <Text style={styles.promoSubtitle}>{promo.subtitle}</Text>
@@ -113,14 +152,10 @@ export default function Home() {
                 </View>
                 <View style={styles.promoImageContainer}>
                   <View
-                    style={[
-                      styles.promoImagePlaceholder,
-                      { backgroundColor: `${promo.color}99` },
-                    ]}
-                  >
-                    {/* Removed placeholder icon */}
-                  </View>
+                    style={[styles.promoImagePlaceholder, { backgroundColor: `${promo.color}99` }]}
+                  />
                 </View>
+                </Link>
               </TouchableOpacity>
             ))}
           </ScrollView>
@@ -131,32 +166,35 @@ export default function Home() {
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Produk Pilihan</Text>
             <TouchableOpacity>
-              <Text style={styles.viewAllText}>Lihat Semua</Text>
+              <Text style={styles.viewAllText} onPress={() => router.push("/product")}>
+                Lihat Semua
+              </Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.productGrid}>
-            {featuredProducts.map((product) => (
+            {produk.map((product) => (
               <TouchableOpacity key={product.id} style={styles.productCard}>
+              <Link href={`/detail/${product.id}`} >
                 <View style={styles.productImageContainer}>
                   <View style={styles.productImagePlaceholder}>
-                    {/* Removed placeholder icon */}
+                    <Image
+                      source={{ uri: product.gambar }}
+                      style={styles.productImagePlaceholder}
+                    />
                   </View>
-                  {/* Removed discount badge */}
                 </View>
-
                 <View style={styles.productInfo}>
                   <Text style={styles.productName} numberOfLines={1}>
-                    {product.name}
+                    {product.nama}
                   </Text>
                   <View style={styles.priceContainer}>
                     <Text style={styles.price}>
-                      Rp {product.price.toLocaleString()}
+                      Rp {product.harga.toLocaleString()}
                     </Text>
-                    {/* Removed discounted price */}
                   </View>
-                  {/* Removed rating container */}
                 </View>
+                </Link>
               </TouchableOpacity>
             ))}
           </View>
@@ -164,9 +202,9 @@ export default function Home() {
 
         {/* About Website Section */}
         <View style={styles.aboutSection}>
-          <Text style={styles.sectionTitle}>Tentang RayTalog</Text>
+          <Text style={styles.sectionTitle}>Tentang Jajanin</Text>
           <Text style={styles.aboutDescription}>
-            RayTalog adalah platform kuliner online yang menyediakan berbagai
+            Jajanin adalah platform kuliner online yang menyediakan berbagai
             pilihan makanan dan minuman berkualitas dari seluruh Indonesia. Kami
             berkomitmen untuk memberikan pengalaman belanja yang terbaik dengan
             produk kuliner terjamin dan layanan pelanggan yang prima.
@@ -175,17 +213,14 @@ export default function Home() {
           <View style={styles.featuresContainer}>
             {aboutSections.map((section, index) => (
               <View key={index} style={styles.featureItem}>
-                {/* Removed feature icon */}
                 <Text style={styles.featureTitle}>{section.title}</Text>
-                <Text style={styles.featureDescription}>
-                  {section.description}
-                </Text>
+                <Text style={styles.featureDescription}>{section.description}</Text>
               </View>
             ))}
           </View>
           <TouchableOpacity
             style={styles.learnMoreButton}
-            onPress={() => navigation.navigate("/(client)/about")} 
+            onPress={() => router.push("/(client)/about")}
           >
             <Text style={styles.learnMoreText}>Pelajari Lebih Lanjut</Text>
           </TouchableOpacity>
@@ -196,10 +231,9 @@ export default function Home() {
           <View style={styles.footerTop}>
             {/* Kolom 1 */}
             <View style={styles.footerCol}>
-              <Text style={styles.footerColTitle}>RayTalog</Text>
+              <Text style={styles.footerColTitle}>Jajanin</Text>
               <Text style={styles.footerText}>
-                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan
-                makanan dan minuman berkualitas.
+                Katalog kuliner terlengkap di Indonesia dengan berbagai pilihan makanan dan minuman berkualitas.
               </Text>
             </View>
 
@@ -209,9 +243,7 @@ export default function Home() {
               <TouchableOpacity onPress={() => router.push("/(client)/about")}>
                 <Text style={styles.footerLink}>Tentang Kami</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push("/(client)/contact")}
-              >
+              <TouchableOpacity onPress={() => router.push("/(client)/contact")}>
                 <Text style={styles.footerLink}>Kontak Kami</Text>
               </TouchableOpacity>
             </View>
@@ -220,26 +252,24 @@ export default function Home() {
             <View style={styles.footerCol}>
               <Text style={styles.footerColTitle}>Ikuti Kami</Text>
               <View style={styles.socialLinks}>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Removed social icons */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleInsta}>
+                  <Ionicons style={styles.iconss} name="logo-instagram"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Removed social icons */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleLinkedin}>
+                  <Ionicons style={styles.iconss} name="logo-linkedin"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Removed social icons */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleFacebook}>
+                  <Ionicons style={styles.iconss} name="logo-facebook"></Ionicons>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.socialButton}>
-                  {/* Removed social icons */}
+                <TouchableOpacity style={styles.socialButton} onPress={handleGithub}>
+                  <Ionicons style={styles.iconss} name="logo-github"></Ionicons>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
 
           <View style={styles.footerBottom}>
-            <Text style={styles.copyright}>
-              © 2025 RayTalog. Hak Cipta Dilindungi.
-            </Text>
+            <Text style={styles.copyright}>© 2025 Jajanin. Hak Cipta Dilindungi.</Text>
           </View>
         </View>
       </ScrollView>
@@ -284,6 +314,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
   },
+  icons: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "black",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  iconss: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
+  },
   sectionTitle: {
     fontSize: 22,
     fontWeight: "bold",
@@ -291,7 +334,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   viewAllText: {
-    color: "#007BFF",
+    color: "#4CAF50",
     fontSize: 14,
     fontWeight: "600",
   },
@@ -400,7 +443,7 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 14,
     fontWeight: "bold",
-    color: "#007BFF",
+    color: "#4CAF50",
   },
   aboutSection: {
     alignItems: "center",
@@ -441,7 +484,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   learnMoreButton: {
-    backgroundColor: "#1E90FF",
+    backgroundColor: "#4CAF50",
     paddingVertical: 14,
     paddingHorizontal: 24,
     borderRadius: 12,

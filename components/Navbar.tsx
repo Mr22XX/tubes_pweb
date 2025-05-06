@@ -1,46 +1,55 @@
-// components/Navbar.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-} from "react-native";
-import { useRouter, usePathname } from "expo-router";
+  Dimensions,
+  Animated,
+} from 'react-native';
+import { useRouter, usePathname } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const { width } = Dimensions.get('window');
 
 export default function Navbar() {
   const router = useRouter();
   const currentPathname = usePathname();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPath, setCurrentPath] = useState("");
-  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [currentPath, setCurrentPath] = useState('');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userId, setUserId] = useState(null); // Inisialisasi state userId
 
   const navItems = [
-    { name: "Beranda", path: "/(client)/home" },
-    { name: "Tentang", path: "/(client)/about" },
-    { name: "Produk", path: "/(client)/product" },
-    { name: "Kontak", path: "/(client)/contact" },
+    { name: 'Beranda', path: '/(client)/home' },
+    { name: 'Tentang', path: '/(client)/about' },
+    { name: 'Produk', path: '/(client)/product' },
+    { name: 'Kontak', path: '/(client)/contact' },
   ];
 
-  const profileDropdownItems = [
-    { name: "Profil Saya", icon: "👤", path: "/(client)/profile" },
-    { name: "Keluar", icon: "📤", path: "/(auth)/logout", color: "#FF3B30" },
-  ];
-
-  // Update current path when pathname changes
+  // Ambil userId dari AsyncStorage saat komponen pertama kali di-render
   useEffect(() => {
-    // Find the matching nav item based on the current pathname
+    const fetchUserId = async () => {
+      try {
+        const storedUserId = await AsyncStorage.getItem('userId');
+        if (storedUserId) {
+          setUserId(storedUserId); // Simpan userId dalam state
+        }
+      } catch (error) {
+        console.error('Error fetching user ID:', error);
+      }
+    };
+
+    fetchUserId();
+  }, []); // Hanya dijalankan sekali saat komponen pertama kali di-mount
+
+  useEffect(() => {
     const matchedNavItem = navItems.find(item => {
-      // Convert paths to comparable format
       const itemPathSegments = item.path.split('/');
       const currentPathSegments = currentPathname.split('/');
-      
-      // Check if the last segment matches (e.g., "home", "about", etc.)
       return itemPathSegments[itemPathSegments.length - 1] === currentPathSegments[currentPathSegments.length - 1];
     });
-    
+
     if (matchedNavItem) {
       setCurrentPath(matchedNavItem.path);
     }
@@ -48,211 +57,156 @@ export default function Navbar() {
 
   const handleNavigation = (path: string) => {
     setCurrentPath(path);
-    router.push(path as any);
-    // Close dropdown after navigation
-    setShowProfileDropdown(false);
+    router.push(path);
+    setIsMenuOpen(false);
   };
-  
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      router.push(`/(client)/search?q=${encodeURIComponent(searchQuery)}`);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userData');
+      await AsyncStorage.removeItem('userId');  // Pastikan menghapus userId juga
+      router.push('/(auth)/login');
+    } catch (error) {
+      console.error('Error clearing session:', error);
     }
-  };
-
-  const handleProfileAction = (path: string) => {
-    // First close the dropdown, then navigate
-    setShowProfileDropdown(false);
-    // Small delay to ensure dropdown animation completes before navigation
-    setTimeout(() => {
-      router.push(path as any);
-    }, 50);
-  };
-
-  // Function to get page title based on current path
-  const getPageTitle = () => {
-    const matchedItem = navItems.find(item => item.path === currentPath);
-    return matchedItem ? matchedItem.name : "";
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.navbar}>
-        {/* Logo & Search */}
         <View style={styles.leftSection}>
-          <TouchableOpacity onPress={() => handleNavigation("/(client)/home")}>
-            <Text style={styles.logo}>RayTalog</Text>
+          <TouchableOpacity onPress={() => handleNavigation('/(client)/home')}>
+            <Text style={styles.logo}>Jajanin</Text>
           </TouchableOpacity>
-
-          <View style={styles.searchContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Cari produk..."
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onSubmitEditing={handleSearch}
-            />
-            <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-              <Text style={styles.searchButtonText}>Cari</Text>
+          {width < 768 && (
+            <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)}>
+              <Text style={styles.hamburgerIcon}>☰</Text>
             </TouchableOpacity>
-          </View>
+          )}
         </View>
 
-        {/* Page Indicator */}
         {currentPath && (
           <View style={styles.pageIndicator}>
             <Text style={styles.pageIndicatorText}>
-              Anda sedang di: <Text style={styles.currentPageName}>{getPageTitle()}</Text>
+              Anda sedang di: <Text style={styles.currentPageName}>{navItems.find(n => n.path === currentPath)?.name}</Text>
             </Text>
           </View>
         )}
 
-        {/* Navigation Items */}
-        <View style={styles.navItems}>
+        {width >= 768 && (
+          <View style={styles.navItems}>
+            {navItems.map((item, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleNavigation(item.path)}
+                style={[styles.navItem, currentPath === item.path && styles.activeNavItem]}
+              >
+                <Text style={[styles.navText, currentPath === item.path && styles.activeNavText]}>
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {userId && (
+              <TouchableOpacity onPress={() => router.push(`/favorit/${userId}`)}>
+                <Text style={[styles.navText, { color: '#4CAF50', fontWeight: 'bold' }]}>
+                  favorit 
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+              <Text style={styles.logoutText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
+
+      {isMenuOpen && width < 768 && (
+        <Animated.View style={styles.mobileMenu}>
           {navItems.map((item, index) => (
             <TouchableOpacity
               key={index}
               onPress={() => handleNavigation(item.path)}
-              style={[
-                styles.navItem,
-                currentPath === item.path && styles.activeNavItem,
-              ]}
+              style={[styles.mobileNavItem, currentPath === item.path && styles.activeNavItem]}
             >
-              <Text
-                style={[
-                  styles.navText,
-                  currentPath === item.path && styles.activeNavText,
-                ]}
-              >
+              <Text style={[styles.navText, currentPath === item.path && styles.activeNavText]}>
                 {item.name}
               </Text>
             </TouchableOpacity>
           ))}
-        </View>
-
-        {/* Profile & Login */}
-        <View style={styles.rightSection}>
-          <View style={styles.profileDropdownContainer}>
-            <TouchableOpacity
-              style={styles.profileIcon}
-              onPress={() => setShowProfileDropdown(!showProfileDropdown)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.iconCircle}>
-                <Text style={styles.iconText}>👤</Text>
-              </View>
+          {userId && (
+            <TouchableOpacity onPress={() => router.push(`/favorit/${userId}`)} style={styles.mobileNavItem}>
+              <Text style={[styles.navText, { color: '#4CAF50', fontWeight: 'bold' }]}>
+                Favorit
+              </Text>
             </TouchableOpacity>
-
-            {showProfileDropdown && (
-              <View style={styles.dropdownMenu}>
-                {profileDropdownItems.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    style={styles.dropdownItem}
-                    onPress={() => handleProfileAction(item.path)}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.dropdownItemIcon}>{item.icon}</Text>
-                    <Text
-                      style={[
-                        styles.dropdownItemText,
-                        item.color && { color: item.color },
-                      ]}
-                    >
-                      {item.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={() => handleNavigation("/(auth)/login")}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.loginButtonText}>Masuk</Text>
+          )}
+          <TouchableOpacity onPress={handleLogout} style={styles.mobileNavItems}>
+            <Text style={styles.logoutText}>Log Out</Text>
           </TouchableOpacity>
-        </View>
-      </View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
-    backgroundColor: "#ffffff",
-    width: "100%",
-    zIndex: 100, // Ensure safe area has high z-index
+    backgroundColor: '#ffffff',
+    width: '100%',
+    zIndex: 100,
   },
   navbar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingVertical: 15,
     paddingHorizontal: 30,
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
+    backgroundColor: '#ffffff',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
     elevation: 5,
-    zIndex: 100, // Increased z-index value
+    zIndex: 100,
   },
   leftSection: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logo: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#007BFF",
+    fontWeight: 'bold',
+    color: '#4CAF50',
     marginRight: 15,
   },
+  hamburgerIcon: {
+    fontSize: 30,
+    color: '#4CAF50',
+  },
   pageIndicator: {
-    position: "absolute",
+    position: 'absolute',
     top: -25,
     left: 0,
     right: 0,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
     paddingVertical: 4,
     paddingHorizontal: 30,
     borderBottomWidth: 1,
-    borderBottomColor: "#eaeaea",
+    borderBottomColor: '#eaeaea',
   },
   pageIndicatorText: {
     fontSize: 12,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
   },
   currentPageName: {
-    fontWeight: "bold",
-    color: "#007BFF",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
-    overflow: "hidden",
-  },
-  searchInput: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    width: 160,
-  },
-  searchButton: {
-    backgroundColor: "#007BFF",
-    paddingHorizontal: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  searchButtonText: {
-    color: "#fff",
-    fontWeight: "500",
+    fontWeight: 'bold',
+    color: '#4CAF50',
   },
   navItems: {
-    flexDirection: "row",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 20,
   },
   navItem: {
@@ -260,78 +214,46 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   activeNavItem: {
     borderBottomWidth: 2,
-    borderBottomColor: "#007BFF",
+    borderBottomColor: '#4CAF50',
   },
   activeNavText: {
-    color: "#007BFF",
-    fontWeight: "bold",
+    color: '#4CAF50',
+    fontWeight: 'bold',
   },
-  rightSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    zIndex: 101, // Higher than navbar for dropdown
-  },
-  profileDropdownContainer: {
-    position: "relative",
-    marginRight: 10,
-    zIndex: 150, // Even higher z-index for dropdown container
-  },
-  profileIcon: {
-    padding: 5,
-  },
-  iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f0f0f0",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  iconText: {
-    fontSize: 16,
-  },
-  dropdownMenu: {
-    position: "absolute",
-    top: 50,
-    right: 0,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 5,
-    width: 200,
-    zIndex: 200, // Very high z-index for the dropdown menu
-  },
-  dropdownItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-  },
-  dropdownItemIcon: {
-    marginRight: 10,
-    fontSize: 16,
-  },
-  dropdownItemText: {
-    fontSize: 14,
-    color: "#333",
-  },
-  loginButton: {
-    backgroundColor: "#007BFF",
+  logoutButton: {
     paddingVertical: 8,
     paddingHorizontal: 20,
+    backgroundColor: '#FF3B30',
     borderRadius: 5,
+    marginLeft: 15,
   },
-  loginButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 14,
+  logoutText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  mobileMenu: {
+    backgroundColor: '#fff',
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    zIndex: 99,
+  },
+  mobileNavItem: {
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  mobileNavItems: {
+    paddingVertical: 15,
+    paddingHorizontal: 30,
+    backgroundColor: '#FF3B30',
   },
 });
